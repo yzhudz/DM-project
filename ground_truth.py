@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 from sketch import Sketch
 from typing import Dict, Tuple, Sequence
 
-
+"""
+  This is the most naive algorithm for calculating the exact sum of each key. 
+  It guarantees accurate results, serving as a reference for comparison with 
+  various sketch algorithms in experiments and control groups.
+"""
 class GroundTruth(Sketch):
 
     def __init__(self, params: Dict[str, int]):

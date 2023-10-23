@@ -24,6 +24,12 @@ class HyperUSS(Sketch):
         self.normalize_values = [0 for _ in range(self.value_count)]
 
     def insert(self, key: int, value: List[int]):
+        """
+        Insert an element into HyperUSS sketch.
+
+        :param key: the identifier(key) of the element
+        :param value: attribute values of the element.
+        """
         empty_bucket = -1
         empty_pos_in_bucket = -1
         min_l2_norm = sys.maxsize
@@ -78,6 +84,10 @@ class HyperUSS(Sketch):
                 element["value"][i] /= (1 - winning_probability)
 
     def all_query(self) -> Dict[int, List[int]]:
+        """
+        Acquire sum of all elements grouped by key.
+
+        """
         result = {}
         for bucket in self.buckets:
             for element in bucket:
@@ -92,7 +102,7 @@ class HyperUSS(Sketch):
         return result
 
 
-# Tests of HyperUss
+# Tests of Hyper-USS
 if __name__ == '__main__':
     hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 200})
     groundTruth = ground_truth.GroundTruth({"value_count": 5})

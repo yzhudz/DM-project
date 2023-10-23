@@ -5,9 +5,9 @@ def generate_and_write_chunk(file, num_entries, num_values, zipf_param, exp_scal
     """
     Generates a chunk of the synthetic dataset and writes it to a file.
 
-    :param file: The file object to write to.
+    :param file: The file to write to.
     :param num_entries: The number of entries in the chunk.
-    :param num_values: The number of values associated with each key.
+    :param num_values: The number of values for each key.
     :param zipf_param: The exponent parameter 's' for the Zipf distribution.
     :param exp_scale: The scale parameter for the exponential distribution.
     """
