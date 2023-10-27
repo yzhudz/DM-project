@@ -2,9 +2,9 @@ import math
 from typing import List
 
 
-def normalized_l2_norm(elements: List[int], normalized_array: List[int]):
+# TODO: normalized L2, add another parameter
+def normalized_l2_norm(elements: List[int]):
     value = 0
     for index, element in enumerate(elements):
-        if normalized_array[index] != 0:
-            value += (element / normalized_array[index]) ** 2
+        value += element ** 2
     return math.sqrt(value)

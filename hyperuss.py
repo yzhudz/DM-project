@@ -20,8 +20,7 @@ class HyperUSS(Sketch):
         # d * w buckets
         self.buckets = [[{"key": -1, "value": []} for _ in range(self.bucket_num)] for _ in
                         range(self.hash_function_num)]
-        # Normalize array, which refers to "A" in the paper
-        self.normalize_values = [0 for _ in range(self.value_count)]
+        # TODO: Normalize array of length {value_count}, which refers to "A" in the paper
 
     def insert(self, key: int, value: List[int]):
         """
@@ -36,9 +35,7 @@ class HyperUSS(Sketch):
         min_l2_norm_bucket = -1
         min_l2_pos_in_bucket = -1
 
-        # First add the normalize array
-        for i in range(self.value_count):
-            self.normalize_values[i] += value[i]
+        # TODO: Add value to normalize array
 
         for i in range(self.hash_function_num):
             bucket_i_pos = mmh3.hash(key.to_bytes(length=8, byteorder='big'), seed=i) % self.bucket_num
@@ -54,8 +51,9 @@ class HyperUSS(Sketch):
                     empty_bucket = i
                     empty_pos_in_bucket = bucket_i_pos
             # compute l2 norm of the bucket, and record the minimum one
+            # TODO: normalized L2
             else:
-                l2 = utils.normalized_l2_norm(element["value"], self.normalize_values)
+                l2 = utils.normalized_l2_norm(element["value"])
                 if l2 < min_l2_norm:
                     min_l2_norm = l2
                     min_l2_norm_bucket = i
@@ -71,7 +69,8 @@ class HyperUSS(Sketch):
         # If there is no empty, compete the incoming element with the element of minimum L2 norm.
         element = self.buckets[min_l2_norm_bucket][min_l2_pos_in_bucket]
         # Compute the winning probability
-        incoming_l2_norm = utils.normalized_l2_norm(value, self.normalize_values)
+        # TODO: normalized L2
+        incoming_l2_norm = utils.normalized_l2_norm(value)
         winning_probability = incoming_l2_norm / (incoming_l2_norm + min_l2_norm)
         rand_number = np.random.uniform(low=0, high=1)
         # update the key and value according to probability
