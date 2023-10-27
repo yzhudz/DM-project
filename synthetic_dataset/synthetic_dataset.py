@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def generate_and_write_chunk(file, num_entries, num_values, zipf_param, exp_scale):
+def generate_and_write_chunk(file, num_entries, num_values, zipf_param, exp_scale, skew):
     """
     Generates a chunk of the synthetic dataset and writes it to a file.
 
@@ -14,12 +14,15 @@ def generate_and_write_chunk(file, num_entries, num_values, zipf_param, exp_scal
     keys = np.random.zipf(zipf_param, num_entries)
     for key in keys:
         values = np.random.exponential(exp_scale, num_values)
-        value_ints = np.round(values).astype(int)
+        if skew:
+            value_ints = np.round([values[i] * 100 ** i for i in range(num_values)]).astype(int)
+        else:
+            value_ints = np.round(values).astype(int)
         line = f"{key} " + " ".join(map(str, value_ints))
         file.write(line + "\n")
 
 
-def write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_name, chunk_size):
+def write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_name, chunk_size, skew):
     """
     Writes the synthetic dataset to a file.
 
@@ -32,11 +35,11 @@ def write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_n
     """
     with open(file_name, 'w') as f:
         for _ in range(num_entries // chunk_size):
-            generate_and_write_chunk(f, chunk_size, num_values, zipf_param, exp_scale)
+            generate_and_write_chunk(f, chunk_size, num_values, zipf_param, exp_scale, skew)
         # Handle any remaining entries
         remainder = num_entries % chunk_size
         if remainder > 0:
-            generate_and_write_chunk(f, remainder, num_values, zipf_param, exp_scale)
+            generate_and_write_chunk(f, remainder, num_values, zipf_param, exp_scale, skew)
 
 
 def main():
@@ -46,8 +49,9 @@ def main():
     exp_scale = 5.0
     file_name = "synthetic_dataset.txt"
     chunk_size = 1000000  # Adjust as needed
+    skew = 0  # data skew
 
-    write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_name, chunk_size)
+    write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_name, chunk_size, skew)
     print(f"Synthetic dataset written to {file_name}")
 
 

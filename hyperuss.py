@@ -20,7 +20,9 @@ class HyperUSS(Sketch):
         # d * w buckets
         self.buckets = [[{"key": -1, "value": []} for _ in range(self.bucket_num)] for _ in
                         range(self.hash_function_num)]
+        self.normalization = params['normalization']
         # TODO: Normalize array of length {value_count}, which refers to "A" in the paper
+        self.a_value = [0 if self.normalization == True else 1] * self.value_count
 
     def insert(self, key: int, value: List[int]):
         """
@@ -35,7 +37,9 @@ class HyperUSS(Sketch):
         min_l2_norm_bucket = -1
         min_l2_pos_in_bucket = -1
 
-        # TODO: Add value to normalize array
+        if self.normalization:
+            for i in range(len(self.a_value)):
+                self.a_value[i] += value[i]
 
         for i in range(self.hash_function_num):
             bucket_i_pos = mmh3.hash(key.to_bytes(length=8, byteorder='big'), seed=i) % self.bucket_num
@@ -51,9 +55,8 @@ class HyperUSS(Sketch):
                     empty_bucket = i
                     empty_pos_in_bucket = bucket_i_pos
             # compute l2 norm of the bucket, and record the minimum one
-            # TODO: normalized L2
             else:
-                l2 = utils.normalized_l2_norm(element["value"])
+                l2 = utils.normalized_l2_norm(element["value"], self.a_value)
                 if l2 < min_l2_norm:
                     min_l2_norm = l2
                     min_l2_norm_bucket = i
@@ -69,8 +72,7 @@ class HyperUSS(Sketch):
         # If there is no empty, compete the incoming element with the element of minimum L2 norm.
         element = self.buckets[min_l2_norm_bucket][min_l2_pos_in_bucket]
         # Compute the winning probability
-        # TODO: normalized L2
-        incoming_l2_norm = utils.normalized_l2_norm(value)
+        incoming_l2_norm = utils.normalized_l2_norm(value, self.a_value)
         winning_probability = incoming_l2_norm / (incoming_l2_norm + min_l2_norm)
         rand_number = np.random.uniform(low=0, high=1)
         # update the key and value according to probability
@@ -103,7 +105,7 @@ class HyperUSS(Sketch):
 
 # Tests of Hyper-USS
 if __name__ == '__main__':
-    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 200})
+    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 100, "normalization": False})
     groundTruth = ground_truth.GroundTruth({"value_count": 5})
     with open("./synthetic_dataset/synthetic_dataset.txt") as f:
         line = f.readline()
@@ -120,3 +122,6 @@ if __name__ == '__main__':
     result2 = groundTruth.all_query()
     print(result[1])
     print(result2[1])
+    print(len(result))
+
+# TODO: matrix
