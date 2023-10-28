@@ -107,7 +107,7 @@ class HyperUSS(Sketch):
 if __name__ == '__main__':
     hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 100, "normalization": False})
     groundTruth = ground_truth.GroundTruth({"value_count": 5})
-    with open("./synthetic_dataset/synthetic_dataset.txt") as f:
+    with open("synthetic_dataset.txt") as f:
         line = f.readline()
         while line:
             row = line.split()
