@@ -125,6 +125,7 @@ if __name__ == '__main__':
     print(result[1])
     print(result2[1])
     print(pd.DataFrame(result).T.reset_index())
+    print(str(pd.DataFrame(result).T.reset_index().columns))
     print('f1 score: ', f1_score(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index()))
     aae, are = aae_and_are(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index())
     print('AAE: ', aae)

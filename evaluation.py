@@ -1,16 +1,19 @@
 import numpy as np
 import pandas as pd
 
+
 # estimation = pd.read_csv('estimation.csv')
 # ground_truth = pd.read_csv('ground_truth.csv')
 
 
 def f1_score(estimation, ground_truth):
-    estimation.columns=['Unnamed: 0','0','1','2','3','4']
-    ground_truth.columns = ['Unnamed: 0', '0', '1', '2', '3', '4']
+    estimation.columns = [str(x) for x in estimation.columns.to_list()]
+    # estimation.rename({'index': 'Unnamed: 0'}, inplace=True)
+    ground_truth.columns = [str(x) for x in ground_truth.columns.to_list()]
+    # ground_truth.rename({'index': 'Unnamed: 0'}, inplace=True)
     list_key_estimated = estimation.sort_values(by='0', ascending=False).iloc[0:200, 0].to_list()
     list_key_ground_truth_top_n = ground_truth.sort_values(by='0', ascending=False).iloc[0:200, 0].to_list()
-    list_key_ground_truth = ground_truth['Unnamed: 0'].to_list()
+    list_key_ground_truth = ground_truth['index'].to_list()
     out_estimation = []
     for i in range(len(list_key_ground_truth)):
         if list_key_ground_truth[i] not in list_key_estimated:
@@ -33,13 +36,15 @@ def f1_score(estimation, ground_truth):
 
 
 # AAE and ARE
-def aae_and_are(estimation,ground_truth):
-    estimation.columns = ['Unnamed: 0', '0', '1', '2', '3', '4']
-    ground_truth.columns = ['Unnamed: 0', '0', '1', '2', '3', '4']
+def aae_and_are(estimation, ground_truth):
+    estimation.columns = [str(x) for x in estimation.columns.to_list()]
+    # estimation.rename({'index': 'Unnamed: 0'}, inplace=True)
+    ground_truth.columns = [str(x) for x in ground_truth.columns.to_list()]
+    # ground_truth.rename({'index': 'Unnamed: 0'}, inplace=True)
     list_key_estimated = estimation.sort_values(by='0', ascending=False).iloc[0:200, 0].to_list()
-    fS_in_Phi = ground_truth[ground_truth['Unnamed: 0'].apply(lambda x: x in list_key_estimated)].sort_values(
-        by='Unnamed: 0').reset_index(drop=True)
-    Phi = estimation.sort_values(by='Unnamed: 0').reset_index(drop=True)
-    aae = np.sum(np.sum(np.abs(Phi - fS_in_Phi),axis=1),axis=0) / Phi.shape[0]
-    are = aae / np.sum(np.sum(fS_in_Phi.iloc[:, 1:],axis=1),axis=0)
+    fS_in_Phi = ground_truth[ground_truth['index'].apply(lambda x: x in list_key_estimated)].sort_values(
+        by='index').reset_index(drop=True)
+    Phi = estimation.sort_values(by='index').reset_index(drop=True)
+    aae = np.sum(np.sum(np.abs(Phi - fS_in_Phi), axis=1), axis=0) / Phi.shape[0]
+    are = aae / np.sum(np.sum(fS_in_Phi.iloc[:, 1:], axis=1), axis=0)
     return aae, are
