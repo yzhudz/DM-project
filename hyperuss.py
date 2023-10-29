@@ -5,6 +5,8 @@ import mmh3
 import utils as utils
 import numpy as np
 import ground_truth
+import pandas as pd
+from evaluation import *
 
 
 class HyperUSS(Sketch):
@@ -105,7 +107,7 @@ class HyperUSS(Sketch):
 
 # Tests of Hyper-USS
 if __name__ == '__main__':
-    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 100, "normalization": False})
+    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 200, "normalization": True})
     groundTruth = ground_truth.GroundTruth({"value_count": 5})
     with open("./synthetic_dataset/synthetic_dataset.txt") as f:
         line = f.readline()
@@ -122,6 +124,9 @@ if __name__ == '__main__':
     result2 = groundTruth.all_query()
     print(result[1])
     print(result2[1])
-    print(len(result))
+    print(pd.DataFrame(result).T.reset_index())
+    print('f1 score: ', f1_score(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index()))
+    aae, are = aae_and_are(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index())
+    print('AAE: ', aae)
+    print('ARE: ', are)
 
-# TODO: matrix
