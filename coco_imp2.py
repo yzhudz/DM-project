@@ -77,7 +77,7 @@ if __name__ == '__main__':
     value_count = 5
     cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 100}) for _ in range(value_count)]
     groundTruth = ground_truth.GroundTruth({"value_count": 5})
-    with open("synthetic_dataset.txt") as f:
+    with open("synthetic_dataset\synthetic_dataset.txt") as f:
         line = f.readline()
         while line:
             row = line.split()
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                 results[k] = []
             results[k].append(single_result[k])
     result2 = groundTruth.all_query()
-    print(results[10])
-    print(result2[10])
+    print(results[93])
+    print(result2[93])
 
 # TODO: matrix
