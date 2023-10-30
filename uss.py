@@ -15,7 +15,7 @@ class OurUSS():
         self.words = []
         # self.exact_counter = defaultdict(int)
         # self.space_saving_count = defaultdict(int)
-        self.amount_of_words = 0
+        # self.amount_of_words = 0
 
     def insert(self, key, value):
         # get the arguments
@@ -59,6 +59,8 @@ class OurUSS():
                 min_counter = min(counters, key=counters.get)
                 if random.uniform(0, 1) < 1 / (min_counter + 1):
                     counters[word[0]] = counters.pop(min_counter) + 1
+                else:
+                    counters[min_counter] += 1
         self.space_saving_count = counters
         self.space_saving_count = dict(sorted(self.space_saving_count.items(), key=lambda item: item[1], reverse=True))
         print(self.space_saving_count)
