@@ -43,17 +43,13 @@ def aae_and_are(estimation, ground_truth):
     estimation.columns = [str(x) for x in estimation.columns.to_list()]
     ground_truth.columns = [str(x) for x in ground_truth.columns.to_list()]
     list_key_estimated=estimation['index'].to_list()
-    fS_in_Phi = ground_truth[ground_truth['index'].apply(lambda x: x in list_key_estimated)].reset_index(drop=True)
     fS_in_Phi = ground_truth[ground_truth['index'].apply(lambda x: x in list_key_estimated)].sort_values(by='index').reset_index(drop=True)
     Phi = estimation.sort_values(by='index').reset_index(drop=True)
-    aae = np.sum(np.sum(np.abs(Phi - fS_in_Phi), axis=1), axis=0) / Phi.shape[0]
-    are = aae / np.sum(np.sum(fS_in_Phi.iloc[:, 1:], axis=1), axis=0)
     # aae = np.sum(np.sum(np.abs(Phi - fS_in_Phi), axis=1), axis=0) / Phi.shape[0]
     aae = np.mean(np.mean(np.abs(Phi.iloc[:, 1:] - fS_in_Phi.iloc[:, 1:])))
     # are = aae / np.sum(np.sum(fS_in_Phi.iloc[:, 1:], axis=1), axis=0)
     are = np.nanmean(
         np.abs(Phi.iloc[:, 1:] - fS_in_Phi.iloc[:, 1:]) / fS_in_Phi.iloc[:, 1:].mask(fS_in_Phi.iloc[:, 1:].eq(0)))
-    return aae, are
     return aae, are
 
 
@@ -82,3 +78,4 @@ def f1_score_coco_uss(estimation, ground_truth):
     recall = tp / (tp + fn)
     f1 = 2 * precision * recall / (precision + recall)
     return f1
+

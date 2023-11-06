@@ -79,18 +79,19 @@ import numpy as np
 import csv
 if __name__ == '__main__':
     #test synthetic data
-#     value_count = 5
-#     cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 100}) for _ in range(value_count)]
-#     groundTruth = ground_truth.GroundTruth({"value_count": 5})
-#     with open("synthetic_dataset.txt") as f:
-#         line = f.readline()
-#         while line:
-#             row = line.split()
-#             key = row[0]
-#             value = row[1:]
-#             value = [int(x) for x in value]
-#             for i in range(value_count):
-#                 cocosketch[i].insert(int(key),value[i])
+
+    value_count = 5
+    cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 100}) for _ in range(value_count)]
+    groundTruth = ground_truth.GroundTruth({"value_count": 5})
+    with open("synthetic_dataset\synthetic_dataset.txt") as f:
+        line = f.readline()
+        while line:
+            row = line.split()
+            key = row[0]
+            value = row[1:]
+            value = [int(x) for x in value]
+            for i in range(value_count):
+                cocosketch[i].insert(int(key),value[i])
                 
 #             groundTruth.insert(int(key), value)
 #             line = f.readline()
@@ -143,16 +144,12 @@ if __name__ == '__main__':
     for i in range(value_count):
         single_result = cocosketch[i].all_query()
         for k, v in single_result.items():
-            if k not in result1:
-                result1[k] = [0] * value_count
-            result1[k][i] = single_result[k]
-    
-    # handle avg case
-    # using cocsketch for ocurrence, cause zero occurence
-    for k in result1.keys():
-        if result1[k][3] != 0:
-            result1[k][1] /= result1[k][3]
-            result1[k][2] /= result1[k][3]
+            if k not in results:
+                results[k] = []
+            results[k].append(single_result[k])
+    result2 = groundTruth.all_query()
+    print(results[93])
+    print(result2[93])
 
             
     for k in result2.keys():
