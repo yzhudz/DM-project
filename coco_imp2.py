@@ -144,17 +144,20 @@ if __name__ == '__main__':
     for i in range(value_count):
         single_result = cocosketch[i].all_query()
         for k, v in single_result.items():
-            if k not in results:
-                results[k] = []
-            results[k].append(single_result[k])
-    result2 = groundTruth.all_query()
-    print(results[93])
-    print(result2[93])
+            if k not in result1:
+                result1[k] = [0] * value_count
+            result1[k][i] = single_result[k]
+            
+    for k in result1.keys():
+        if result1[k][3] != 0:
+            result1[k][1] /= result1[k][3]
+            result1[k][2] /= result1[k][3]
 
             
     for k in result2.keys():
         result2[k][1] /= result2[k][3]
         result2[k][2] /= result2[k][3]
+        
     # result1 = result1.iloc[:, :-1]
     # result2 = result2.iloc[:, :-1]
     print(pd.DataFrame(result1).T.reset_index())
