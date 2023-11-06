@@ -14,8 +14,16 @@ class GroundTruth(Sketch):
         self.params = params
         self.result = {}
         self.value_count = params["value_count"]
+        self.normalization = params['normalization']
+        self.a_value = [0 if self.normalization == True else 1] * self.value_count
+
 
     def insert(self, key, value):
+
+        if self.normalization:
+            for i in range(len(self.a_value)):
+                self.a_value[i] += value[i]
+
         if key in self.result:
             for i in range(self.value_count):
                 self.result[key][i] += value[i]
@@ -23,4 +31,4 @@ class GroundTruth(Sketch):
             self.result[key] = value
 
     def all_query(self):
-        return self.result
+        return self.result, self.a_value
