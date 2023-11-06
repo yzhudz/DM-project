@@ -1,4 +1,4 @@
-from evaluation import aae_and_are, f1_score_coco_uss, f1_score_hyper_uss
+from evaluation import aae_and_are, f1_score
 import pandas as pd
 import numpy as np
 from hyperuss import HyperUSS
@@ -6,14 +6,14 @@ from coco_imp2 import Coco
 from ground_truth import GroundTruth
 
 value_count = 5
-bucket_num = 100
+bucket_num = 1000
 hash_num = 2
 
 
 #define algorithms
-hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": True})
+hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": False})
 cocosketch = [Coco({"hash_function_nums": hash_num, "bucket_num": bucket_num}) for _ in range(value_count)]
-groundTruth = GroundTruth({"value_count": value_count})
+groundTruth = GroundTruth({"value_count": value_count,"normalization": False})
 with open("synthetic_dataset.txt") as f:
     line = f.readline()
     while line:
@@ -29,11 +29,11 @@ with open("synthetic_dataset.txt") as f:
     f.close()
 
 #query result
-gt_result = groundTruth.all_query()
+gt_result, gt_a = groundTruth.all_query()
 print("*"*30)
 print("testing result of hyper_uss")
-hyperuss_result = hyper_uss.all_query()
-print('f1 score: ', f1_score_hyper_uss(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(hyperuss_result).T.reset_index()))
+hyperuss_result, hyper_a = hyper_uss.all_query()
+print('f1 score: ', f1_score(hyperuss_result, gt_result, gt_a))
 aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(hyperuss_result).T.reset_index())
 print('AAE: ', aae)
 print('ARE: ', are)
@@ -46,7 +46,7 @@ for i in range(value_count):
         if k not in cocosktech_result:
             cocosktech_result[k] = [0] * value_count
         cocosktech_result[k][i] = single_result[k]
-print('f1 score: ', f1_score_coco_uss(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(cocosktech_result).T.reset_index()))
+print('f1 score: ', f1_score(cocosktech_result, gt_result,gt_a))
 aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(cocosktech_result).T.reset_index())
 print('AAE: ', aae)
 print('ARE: ', are)

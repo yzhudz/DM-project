@@ -73,15 +73,15 @@ class Coco(Sketch):
 
 
 # Tests of CocoSketch
-from evaluation import aae_and_are, f1_score_coco_uss
+from evaluation import aae_and_are, f1_score
 import pandas as pd
 import numpy as np
 import csv
 if __name__ == '__main__':
     #test synthetic data
     value_count = 5
-    cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 100}) for _ in range(value_count)]
-    groundTruth = ground_truth.GroundTruth({"value_count": 5})
+    cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 1000}) for _ in range(value_count)]
+    groundTruth = ground_truth.GroundTruth({"value_count": 5, "normalization": False})
     with open("synthetic_dataset.txt") as f:
         line = f.readline()
         while line:
@@ -98,22 +98,17 @@ if __name__ == '__main__':
     #query
     result1 = {}
     
-    result2 = groundTruth.all_query()         
+    result2, gt_a = groundTruth.all_query()         
     for i in range(value_count):
         single_result = cocosketch[i].all_query()
         for k, v in single_result.items():
             if k not in result1:
                 result1[k] = [0] * value_count
             result1[k][i] = single_result[k]
-    print(result1[10])
-    print(result2[10])
-
-# # TODO: matrix
-#set threshold 0.000001 * total_values of each row
     print(pd.DataFrame(result1).T.reset_index())
     print(pd.DataFrame(result2).T.reset_index())
     # print(str(pd.DataFrame(result1).T.reset_index().columns))
-    print('f1 score: ', f1_score_coco_uss(pd.DataFrame(result1).T.reset_index(), pd.DataFrame(result2).T.reset_index()))
+    print('f1 score: ', f1_score(result1, result2, gt_a))
     aae, are = aae_and_are(pd.DataFrame(result1).T.reset_index(), pd.DataFrame(result2).T.reset_index())
     print('AAE: ', aae)
     print('ARE: ', are)
