@@ -1,4 +1,4 @@
-from evaluation import aae_and_are, f1_score
+from evaluation import  metrics
 import pandas as pd
 import numpy as np
 from hyperuss import HyperUSS
@@ -11,10 +11,10 @@ hash_num = 2
 
 
 #define algorithms
-hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": False})
+hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": True})
 cocosketch = [Coco({"hash_function_nums": hash_num, "bucket_num": bucket_num}) for _ in range(value_count)]
-groundTruth = GroundTruth({"value_count": value_count,"normalization": False})
-with open("synthetic_dataset.txt") as f:
+groundTruth = GroundTruth({"value_count": value_count,"normalization": True})
+with open("./synthetic_dataset/synthetic_dataset.txt") as f:
     line = f.readline()
     while line:
         row = line.split()
@@ -33,10 +33,7 @@ gt_result, gt_a = groundTruth.all_query()
 print("*"*30)
 print("testing result of hyper_uss")
 hyperuss_result, hyper_a = hyper_uss.all_query()
-print('f1 score: ', f1_score(hyperuss_result, gt_result, gt_a))
-aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(hyperuss_result).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 score: ', metrics(hyperuss_result, gt_result, gt_a))
 print("*"*30)
 print("testing result of cocosketch")
 cocosktech_result = {}
@@ -46,7 +43,4 @@ for i in range(value_count):
         if k not in cocosktech_result:
             cocosktech_result[k] = [0] * value_count
         cocosktech_result[k][i] = single_result[k]
-print('f1 score: ', f1_score(cocosktech_result, gt_result,gt_a))
-aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(cocosktech_result).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 aae, are = ', metrics(cocosktech_result, gt_result, gt_a))

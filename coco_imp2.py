@@ -73,7 +73,7 @@ class Coco(Sketch):
 
 
 # Tests of CocoSketch
-from evaluation import aae_and_are, f1_score
+from evaluation import  metrics
 import pandas as pd
 import numpy as np
 import csv
@@ -108,10 +108,7 @@ if __name__ == '__main__':
     print(pd.DataFrame(result1).T.reset_index())
     print(pd.DataFrame(result2).T.reset_index())
     # print(str(pd.DataFrame(result1).T.reset_index().columns))
-    print('f1 score: ', f1_score(result1, result2, gt_a))
-    aae, are = aae_and_are(pd.DataFrame(result1).T.reset_index(), pd.DataFrame(result2).T.reset_index())
-    print('AAE: ', aae)
-    print('ARE: ', are)
+    print('f1 score: ', metrics(result1, result2, gt_a))
     
     # test nba dataset
     # value_count = 4

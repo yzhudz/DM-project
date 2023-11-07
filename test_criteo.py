@@ -2,7 +2,7 @@ import pandas as pd
 
 import ground_truth
 from hyperuss import HyperUSS
-from evaluation import f1_score, aae_and_are
+from evaluation import metrics
 from coco_imp2 import Coco
 
 df = pd.read_csv('/Users/yifan/Downloads/dac/test.txt', sep='\t', header=None)
@@ -47,13 +47,9 @@ for i in range(13):
 
 
 print("Hyper USS: ")
-print('f1 score: ', f1_score(result, result2, a2))
-aae, are = aae_and_are(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 score: ', metrics(result, result2, a2))
+
 
 print("CocoSketch: ")
-print('f1 score: ', f1_score(result3, result2, a2))
-aae, are = aae_and_are(pd.DataFrame(result3).T.reset_index(), pd.DataFrame(result2).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 score: ', metrics(result3, result2, a2))
+

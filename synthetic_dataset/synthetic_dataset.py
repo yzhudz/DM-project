@@ -49,7 +49,7 @@ def main():
     exp_scale = 5.0
     file_name = "../synthetic_dataset.txt"
     chunk_size = 1000000  # Adjust as needed
-    skew = 0  # data skew
+    skew = 1  # data skew
 
     write_dataset_to_file(num_entries, num_values, zipf_param, exp_scale, file_name, chunk_size, skew)
     print(f"Synthetic dataset written to {file_name}")

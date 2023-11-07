@@ -1,4 +1,4 @@
-from evaluation import aae_and_are, f1_score
+from evaluation import metrics
 import pandas as pd
 import numpy as np
 import csv
@@ -47,10 +47,7 @@ print("*"*30)
 print("testing result of hyper_uss")
 hyperuss_result, hyper_a = hyper_uss.all_query()
 get_average(hyperuss_result)
-print('f1 score: ', f1_score(hyperuss_result, gt_result, gt_a))
-aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(hyperuss_result).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 score: ', metrics(hyperuss_result, gt_result, gt_a))
 print("*"*30)
 print("testing result of cocosketch")
 cocosktech_result = {}
@@ -61,7 +58,4 @@ for i in range(value_count):
             cocosktech_result[k] = [0] * value_count
         cocosktech_result[k][i] = single_result[k]
 get_average(cocosktech_result)
-print('f1 score: ', f1_score(cocosktech_result, gt_result, gt_a))
-aae, are = aae_and_are(pd.DataFrame(gt_result).T.reset_index(), pd.DataFrame(cocosktech_result).T.reset_index())
-print('AAE: ', aae)
-print('ARE: ', are)
+print('f1 score: ', metrics(cocosktech_result, gt_result, gt_a))
