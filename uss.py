@@ -6,7 +6,7 @@ import mmh3
 import utils as utils
 import numpy as np
 import ground_truth
-from evaluation import f1_score_uss, aae_and_are
+from evaluation import metrics
 import pandas as pd
 
 
@@ -147,12 +147,8 @@ if __name__ == "__main__":
             groundTruth.insert(value[0], value[1:])
 
     result = uss.all_query()
-    result2, _ = groundTruth.all_query()
-    print('f1 score: ',
-          f1_score_uss(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index()))
-    aae, are = aae_and_are(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index())
-    print('AAE: ', aae)
-    print('ARE: ', are)
+    result2, truth_a_value = groundTruth.all_query()
+    print('f1 score: ', metrics(result, result2, truth_a_value))
 
     # uss.unbiased_space_saving_counter(100)
     # uss.unbiased_space_saving_value(100)
