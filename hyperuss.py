@@ -108,7 +108,7 @@ class HyperUSS(Sketch):
 
 # Tests of Hyper-USS
 if __name__ == '__main__':
-    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 20000, "normalization": True})
+    hyperUSS = HyperUSS({"hash_function_nums": 2, "value_count": 5, "bucket_num": 1000, "normalization": True})
     groundTruth = ground_truth.GroundTruth({"value_count": 5, "normalization": True})
     with open("./synthetic_dataset/synthetic_dataset.txt") as f:
         line = f.readline()
@@ -127,8 +127,6 @@ if __name__ == '__main__':
     print(result2[1])
     print(pd.DataFrame(result).T.reset_index())
     print(str(pd.DataFrame(result).T.reset_index().columns))
-    print('f1 score: ', f1_score_hyper_uss(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index(),a_value,truth_a_value))
-    aae, are = aae_and_are(pd.DataFrame(result).T.reset_index(), pd.DataFrame(result2).T.reset_index())
-    print('AAE: ', aae)
-    print('ARE: ', are)
+    print('f1 score: ', metrics(result, result2, truth_a_value))
+
 
