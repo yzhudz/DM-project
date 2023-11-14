@@ -1,35 +1,23 @@
-import sys
 from typing import Dict, List
 from sketch import Sketch
-import random
 import mmh3
 import utils as utils
 import numpy as np
 import ground_truth
 from evaluation import metrics
 import pandas as pd
-import math
 
 
 class OurUSS(Sketch):
 
     def __init__(self, params: Dict[str, int]):
-
-        # self.file_path = file_path
         super().__init__(params)
-        # self.stream_item_set = []
         self.hash_function_num = params["hash_function_nums"]
         self.bucket_num = params["bucket_num"]
         self.buckets = [[{"key": -1, "value": 0} for _ in range(self.bucket_num)] for _ in
                         range(self.hash_function_num)]
-        # self.value_count = params["value_count"]
-        # self.exact_counter = defaultdict(int)
-        # self.space_saving_count = defaultdict(int)
-        # self.amount_of_words = 0
 
     def insert(self, key: int, value: int):
-        # empty_bucket = -1
-        # empty_pos_in_bucket = -1
         min_value = float('inf')
         min_bucket = -1
         min_pos_in_bucket = -1
