@@ -81,7 +81,7 @@ if __name__ == '__main__':
     #test synthetic data
     value_count = 5
     cocosketch = [Coco({"hash_function_nums": 2, "bucket_num": 1000}) for _ in range(value_count)]
-    groundTruth = ground_truth.GroundTruth({"value_count": 5, "normalization": False})
+    groundTruth = ground_truth.GroundTruth({"value_count": 5, "normalization": True})
     with open("synthetic_dataset.txt") as f:
         line = f.readline()
         while line:

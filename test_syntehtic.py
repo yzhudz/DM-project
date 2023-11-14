@@ -11,9 +11,9 @@ hash_num = 2
 
 
 #define algorithms
-hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": False})
+hyper_uss = HyperUSS({"hash_function_nums": hash_num, "value_count": value_count, "bucket_num": bucket_num, "normalization": True})
 cocosketch = [Coco({"hash_function_nums": hash_num, "bucket_num": bucket_num}) for _ in range(value_count)]
-groundTruth = GroundTruth({"value_count": value_count,"normalization": False})
+groundTruth = GroundTruth({"value_count": value_count,"normalization": True})
 with open("synthetic_dataset.txt") as f:
     line = f.readline()
     while line:
