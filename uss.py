@@ -8,147 +8,118 @@ import numpy as np
 import ground_truth
 from evaluation import metrics
 import pandas as pd
+import math
 
 
-class Node():
-    def __init__(self):
-        self.id = 0
-        self.value_list = []
+def l2_norm(elements: List[int], a_value: List[int]):
+    value = 0
+    for index, element in enumerate(elements):
+        if a_value[index] != 0:
+            value += (element / a_value[index]) ** 2
+    return math.sqrt(value)
 
 
-class OurUSS():
+class OurUSS(Sketch):
 
-    def __init__(self):
+    def __init__(self, params: Dict[str, int]):
+
         # self.file_path = file_path
-        # super().__init__(params)
+        super().__init__(params)
         # self.stream_item_set = []
-        self.bucket_size = 100
-        self.current_size = 0
-        self.bucket = {}
-        self.error = 0
+        self.hash_function_num = params["hash_function_nums"]
+        self.bucket_num = params["bucket_num"]
+        self.buckets = [[{"key": -1, "value": 0} for _ in range(self.bucket_num)] for _ in
+                        range(self.hash_function_num)]
+        self.value_count = params["value_count"]
+
+        self.normalization = params['normalization']
+        self.a_value = [0 if self.normalization ==
+                             True else 1] * self.value_count
         # self.exact_counter = defaultdict(int)
         # self.space_saving_count = defaultdict(int)
         # self.amount_of_words = 0
 
-    def insert(self, key, value):
-        if key in self.bucket:
-            arr1 = np.array(self.bucket[key][2])
-            arr2 = np.array(value)
-            self.bucket[key][0] += 1
-            self.bucket[key][2] = list(arr1 + arr2)
-        elif len(self.bucket) + 1 <= self.bucket_size:
-            self.bucket[key] = [1, self.error, value]
-        else:
-            min_error = float(np.inf)
-            for i in self.bucket:
-                # print(i)
-                if self.bucket[i][0] + self.bucket[i][1] < min_error:
-                    min_error = self.bucket[i][0] + self.bucket[i][1]
-            self.error = min_error
-            keys = [v for i, v in enumerate(self.bucket) if self.bucket[v][0] + self.bucket[v][1] <= self.error]
-            for key in keys:
-                if random.uniform(0, 1) < 1 / (self.error + 1):
-                    self.bucket.pop(key)
-            self.bucket[key] = [1, self.error, value]
+    def insert(self, key: int, value: List[int]):
+        empty_bucket = -1
+        empty_pos_in_bucket = -1
+        min_value = float('inf')
+        min_bucket = -1
+        min_pos_in_bucket = -1
 
-    def all_query(self):
-        self.bucket = dict(
-            sorted(self.bucket.items(), key=lambda i: i[1][0] + i[1][1], reverse=True))
-        result = {i: self.bucket[i][2] for i in self.bucket}
+        for i in range(self.hash_function_num):
+            bucket_i_pos = mmh3.hash(key.to_bytes(
+                length=8, byteorder='big'), seed=i) % self.bucket_num
+            element = self.buckets[i][bucket_i_pos]
+            # Element key is recorded in one of the buckets, simply increase the value.
+            if element["key"] == key:
+                for j in range(self.value_count):
+                    element["value"][j] += value[j]
+                return
+            # An empty slot is found, first record the position.
+            if element["key"] == -1:
+                if empty_bucket < 0:
+                    empty_bucket = i
+                    empty_pos_in_bucket = bucket_i_pos
+
+            # Get the min_value_pos
+            else:
+                l2 = l2_norm(element["value"], self.a_value)
+                if l2 < min_value:
+                    min_value = l2
+                    min_bucket = i
+                    min_pos_in_bucket = bucket_i_pos
+
+        # After the loop, checking if there is any empty bucket and place the element in the empty position.
+        if empty_bucket >= 0:
+            element = self.buckets[empty_bucket][empty_pos_in_bucket]
+            element["key"] = key
+            element["value"] = value.copy()
+            return
+
+        # If there is no empty, compete the incoming element with the element of minimum.
+        element = self.buckets[min_bucket][min_pos_in_bucket]
+        # Compute the drop probability
+        drop_probability = 1 / (min_value + 1)
+        rand_number = np.random.uniform(low=0, high=1)
+        # update the key and value according to probability
+        if rand_number < drop_probability:
+            element["key"] = key
+            element["value"] = value
+
+    def all_query(self) -> Dict[int, List[int]]:
+        result = {}
+        for bucket in self.buckets:
+            for element in bucket:
+                if element["key"] == -1:
+                    continue
+                if element["key"] in result:
+                    for i in range(self.value_count):
+                        result[element["key"]][i] += element["value"][i]
+                else:
+                    result[element["key"]] = element["value"]
         return result
-
-    def read_file(self):
-        with open('synthetic_dataset/synthetic_dataset.txt') as f:
-            for line in f:
-                row = line.split()
-                value = [int(x) for x in row]
-                self.stream_item_set.append(value)
-        # print(self.words)
-
-    # def space_saving_counter(self, k):
-    #     """ Space saving counter """
-    #     counters = {}
-    #     for word in self.words:
-    #         if word in counters:
-    #             counters[word] += 1
-    #         elif len(counters) + 1 < k:
-    #             counters[word] = 1
-    #         else:
-    #             min_counter = min(counters, key=counters.get)
-    #             counters[word] = counters.pop(min_counter) + 1
-    #     self.space_saving_count = counters
-    #     self.space_saving_count = dict(sorted(self.space_saving_count.items(), key=lambda item: item[1], reverse=True))
-
-    def unbiased_space_saving_counter(self, k):
-        """ Space saving counter """
-        counters = {}
-        for word in self.stream_item_set:
-            key = word[0]
-            if key in counters:
-                counters[key] += 1
-            elif len(counters) + 1 <= k:
-                counters[key] = 1
-            else:
-                min_counter_key = min(counters, key=counters.get)
-                if random.uniform(0, 1) < 1 / (min_counter_key + 1):
-                    counters[key] = counters.pop(min_counter_key) + 1
-                # else:
-                #     counters[min_counter_key] += 1
-            # print(values)
-        self.space_saving_count = counters
-        self.space_saving_count = dict(sorted(self.space_saving_count.items(), key=lambda item: item[1], reverse=True))
-        print(self.space_saving_count)
-        print(len(self.space_saving_count))
-
-    def unbiased_space_saving_value(self, k):
-        """ Space saving counter """
-        bucket = {}
-        error = 0
-        for item in self.stream_item_set:
-            key = item[0]
-            value = item[1:]
-            if key in bucket:
-                arr1 = np.array(bucket[key][2])
-                arr2 = np.array(value)
-                bucket[key][0] += 1
-                bucket[key][2] = list(arr1 + arr2)
-            elif len(bucket) + 1 <= k:
-                bucket[key] = [1, error, value]
-            else:
-                min_error = float(np.inf)
-                for i in bucket:
-                    # print(i)
-                    if bucket[i][0] + bucket[i][1] < min_error:
-                        min_error = bucket[i][0] + bucket[i][1]
-                error = min_error
-                keys = [v for i, v in enumerate(bucket) if bucket[v][0] + bucket[v][1] <= error]
-                for key in keys:
-                    if random.uniform(0, 1) < 1 / (error + 1):
-                        bucket.pop(key)
-                bucket[key] = [1, error, value]
-
-        bucket = dict(
-            sorted(bucket.items(), key=lambda i: i[1][0] + i[1][1], reverse=True))
-        print(bucket)
-        # print(self.space_saving_count)
-        # print(values)
 
 
 if __name__ == "__main__":
-    uss = OurUSS()
-    # uss.read_file()
-    groundTruth = ground_truth.GroundTruth({"value_count": 5, "normalization": False})
-    with open('synthetic_dataset/synthetic_dataset.txt') as f:
-        for line in f:
+    USS = OurUSS({"hash_function_nums": 2, "value_count": 5,
+                  "bucket_num": 1000, "normalization": False})
+    groundTruth = ground_truth.GroundTruth(
+        {"value_count": 5, "normalization": True})
+    with open("./synthetic_dataset/synthetic_dataset.txt") as f:
+        line = f.readline()
+        while line:
             row = line.split()
-            value = [int(x) for x in row]
-            # uss.stream_item_set.append(value)
-            uss.insert(value[0], value[1:])
-            groundTruth.insert(value[0], value[1:])
-
-    result = uss.all_query()
+            key = row[0]
+            value = row[1:]
+            value = [int(x) for x in value]
+            USS.insert(int(key), value)
+            groundTruth.insert(int(key), value)
+            line = f.readline()
+        f.close()
+    result = USS.all_query()
     result2, truth_a_value = groundTruth.all_query()
+    print(result[1])
+    print(result2[1])
+    print(pd.DataFrame(result).T.reset_index())
+    print(str(pd.DataFrame(result).T.reset_index().columns))
     print('f1 score: ', metrics(result, result2, truth_a_value))
-
-    # uss.unbiased_space_saving_counter(100)
-    # uss.unbiased_space_saving_value(100)
