@@ -11,14 +11,6 @@ import pandas as pd
 import math
 
 
-def l2_norm(elements: List[int], a_value: List[int]):
-    value = 0
-    for index, element in enumerate(elements):
-        if a_value[index] != 0:
-            value += (element / a_value[index]) ** 2
-    return math.sqrt(value)
-
-
 class OurUSS(Sketch):
 
     def __init__(self, params: Dict[str, int]):
@@ -30,18 +22,14 @@ class OurUSS(Sketch):
         self.bucket_num = params["bucket_num"]
         self.buckets = [[{"key": -1, "value": 0} for _ in range(self.bucket_num)] for _ in
                         range(self.hash_function_num)]
-        self.value_count = params["value_count"]
-
-        self.normalization = params['normalization']
-        self.a_value = [0 if self.normalization ==
-                             True else 1] * self.value_count
+        # self.value_count = params["value_count"]
         # self.exact_counter = defaultdict(int)
         # self.space_saving_count = defaultdict(int)
         # self.amount_of_words = 0
 
-    def insert(self, key: int, value: List[int]):
-        empty_bucket = -1
-        empty_pos_in_bucket = -1
+    def insert(self, key: int, value: int):
+        # empty_bucket = -1
+        # empty_pos_in_bucket = -1
         min_value = float('inf')
         min_bucket = -1
         min_pos_in_bucket = -1
@@ -52,39 +40,37 @@ class OurUSS(Sketch):
             element = self.buckets[i][bucket_i_pos]
             # Element key is recorded in one of the buckets, simply increase the value.
             if element["key"] == key:
-                for j in range(self.value_count):
-                    element["value"][j] += value[j]
+                element["value"] += value
                 return
-            # An empty slot is found, first record the position.
+            # An empty slot is found, insert the value.
             if element["key"] == -1:
-                if empty_bucket < 0:
-                    empty_bucket = i
-                    empty_pos_in_bucket = bucket_i_pos
+                element = self.buckets[i][bucket_i_pos]
+                element["key"] = key
+                element["value"] = value
+                return
 
             # Get the min_value_pos
-            else:
-                l2 = l2_norm(element["value"], self.a_value)
-                if l2 < min_value:
-                    min_value = l2
-                    min_bucket = i
-                    min_pos_in_bucket = bucket_i_pos
-
-        # After the loop, checking if there is any empty bucket and place the element in the empty position.
-        if empty_bucket >= 0:
-            element = self.buckets[empty_bucket][empty_pos_in_bucket]
-            element["key"] = key
-            element["value"] = value.copy()
+            current_value = element['value']
+            if current_value < min_value:
+                min_bucket = i
+                min_pos_in_bucket = bucket_i_pos
+                min_value = current_value
+        if value == 0:
             return
 
-        # If there is no empty, compete the incoming element with the element of minimum.
+        # min value position
         element = self.buckets[min_bucket][min_pos_in_bucket]
         # Compute the drop probability
-        drop_probability = 1 / (min_value + 1)
+        drop_probability = value / (min_value + value)
         rand_number = np.random.uniform(low=0, high=1)
         # update the key and value according to probability
+        # replace
         if rand_number < drop_probability:
             element["key"] = key
             element["value"] = value
+        # not replace, add the value of min
+        else:
+            self.buckets[min_bucket][min_pos_in_bucket]['value'] += value
 
     def all_query(self) -> Dict[int, List[int]]:
         result = {}
@@ -92,19 +78,16 @@ class OurUSS(Sketch):
             for element in bucket:
                 if element["key"] == -1:
                     continue
-                if element["key"] in result:
-                    for i in range(self.value_count):
-                        result[element["key"]][i] += element["value"][i]
-                else:
-                    result[element["key"]] = element["value"]
+                result[element["key"]] = element["value"]
         return result
 
 
 if __name__ == "__main__":
-    USS = OurUSS({"hash_function_nums": 2, "value_count": 5,
-                  "bucket_num": 1000, "normalization": False})
+    value_count = 5
+    USS = [OurUSS({"hash_function_nums": 2,
+                  "bucket_num": 1000}) for _ in range(value_count)]
     groundTruth = ground_truth.GroundTruth(
-        {"value_count": 5, "normalization": True})
+        {"value_count": 5, "normalization": False})
     with open("./synthetic_dataset/synthetic_dataset.txt") as f:
         line = f.readline()
         while line:
@@ -112,11 +95,20 @@ if __name__ == "__main__":
             key = row[0]
             value = row[1:]
             value = [int(x) for x in value]
-            USS.insert(int(key), value)
+            for i in range(value_count):
+                USS[i].insert(int(key), value[i])
             groundTruth.insert(int(key), value)
             line = f.readline()
         f.close()
-    result = USS.all_query()
+
+    result = {}
+    for i in range(value_count):
+        single_result = USS[i].all_query()
+        for j, k in single_result.items():
+            if j not in result:
+                result[j] = [0] * value_count
+            result[j][i] = single_result[j]
+
     result2, truth_a_value = groundTruth.all_query()
     print(result[1])
     print(result2[1])
