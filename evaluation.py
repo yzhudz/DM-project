@@ -39,7 +39,7 @@ import utils
 
 def metrics(estimation: Dict[int, List[float]], ground_truth: Dict[int, List[float]], total: List[float],
             alpha=0.00001) -> float:
-    tp, tn, fp, fn, aae, are, aae_sum, are_sum = 0, 0, 0, 0, 0, 0, 0, 0
+    tp, tn, fp, fn, aae, are, aae_sum, are_sum, f1 = 0, 0, 0, 0, 0, 0, 0, 0, 0
     for key, values in ground_truth.items():
         for index, value in enumerate(values):
             v = value
@@ -60,9 +60,10 @@ def metrics(estimation: Dict[int, List[float]], ground_truth: Dict[int, List[flo
             else:
                 tn += 1
 
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-    f1 = 2 * precision * recall / (precision + recall)
+    if tp + fp != 0 and tp + fn != 0:
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 2 * precision * recall / (precision + recall)
     if tp != 0:
         aae_sum += aae / tp
         are_sum += are / tp
