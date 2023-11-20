@@ -6,7 +6,7 @@ from uss import OurUSS
 from evaluation import metrics
 from coco_imp2 import Coco
 
-df = pd.read_csv('/Users/yifan/Downloads/dac/test.txt', sep='\t', header=None)
+df = pd.read_csv('./test.txt', sep='\t', header=None)
 
 numeric_columns = df.iloc[:, :13]
 categorical_columns = df.iloc[:, 13:]
